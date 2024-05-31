@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 
 public class ConversionUtils {
   public static CustomerContactDTO convertToCustomerContactDTO(List<CustomerDO> customerDOs) {
-    List<String> emails = new ArrayList<>();
-    List<String> phoneNumbers = new ArrayList<>();
+    Set<String> emails = new HashSet<>();
+    Set<String> phoneNumbers = new HashSet<>();
     Integer primaryContactId = null;
     List<Integer> secondaryContactIds = new ArrayList<>();
 
@@ -24,8 +24,7 @@ public class ConversionUtils {
         secondaryContactIds.add(customer.getId());
       }
     }
-
-    return new CustomerContactDTO(primaryContactId, emails, phoneNumbers, secondaryContactIds);
-
+    
+    return new CustomerContactDTO(primaryContactId, new ArrayList<>(emails), new ArrayList<>(phoneNumbers), secondaryContactIds);
   }
 }
