@@ -29,7 +29,9 @@ public class OrderService {
     if(CollectionUtils.isEmpty(existingCustomerDOs))
       customerDOS = createNewCustomer(orderRequestDTO);
     else {
-      existingCustomerDOs = updateLinkPrecedence(existingCustomerDOs);
+      existingCustomerDOs = updateLinkPrecedence(existingCustomerDOs) ?
+          orderDetailsRepository.findByPhoneNumberOrEmail(orderRequestDTO.getPhoneNumber(),
+              orderRequestDTO.getEmail()) : existingCustomerDOs;
       customerDOS = createNewCustomerByContactDetails(orderRequestDTO, existingCustomerDOs);
     }
 
@@ -54,9 +56,9 @@ public class OrderService {
     return existingOrders;
   }
 
-  private List<CustomerDO> updateLinkPrecedence(List<CustomerDO> existingOrders) {
+  private boolean updateLinkPrecedence(List<CustomerDO> existingOrders) {
     if (existingOrders.size() <= 1)
-      return existingOrders;
+      return false;
 
     existingOrders.sort(Comparator.comparing(CustomerDO::getCreatedAt).reversed());
 
@@ -65,7 +67,7 @@ public class OrderService {
         .toList();
 
     if (primaryOrders.size() <= 1)
-      return existingOrders;
+      return false;
 
     CustomerDO earliestPrimaryOrder = primaryOrders.get(primaryOrders.size() - 1);
 
@@ -80,7 +82,7 @@ public class OrderService {
         .toList();
 
     updatedOrders.forEach(orderDetailsRepository::save);
-    return existingOrders;
+    return true;
   }
 
   private List<CustomerDO> createNewCustomer(OrderRequestDTO orderRequestDTO) {
